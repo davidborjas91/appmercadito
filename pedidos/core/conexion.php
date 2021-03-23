@@ -109,4 +109,82 @@
 
 $foo = new Foo; */
 
+//Conexion PDO para arreglos y JSON
+class db{
+	public $isConnected;
+	protected $datab;
+
+	public function __construct(){
+		$this->isConnected = true;
+		try{
+			$this->datab = new PDO("mysql:host=bfdtechnologies.info;dbname=bfdtechn_app_mercadito_prod", "bfdtechn_jborjas", "Job.2021**"); 
+			$this->datab->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
+			$this->datab->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+		} 
+		catch(PDOException $e){ 
+			$this->isConnected = false;
+			throw new Exception($e->getMessage());
+		}
+	}
+
+	public function desconectar(){
+		$this->datab = null;
+		$this->isConnected = false;
+	}
+
+	public function getFila($query, $params=array()){
+		try{ 
+			$stmt = $this->datab->prepare($query); 
+			$stmt->execute($params);
+			return $stmt->fetch(); 
+
+		}catch(PDOException $e){
+			throw new Exception($e->getMessage());
+		}
+	}
+
+	public function getFilas($query, $params=array()){
+		try{ 
+			$stmt = $this->datab->prepare($query); 
+			$stmt->execute($params);
+			return $stmt->fetchAll();       
+		
+		}catch(PDOException $e){
+			throw new Exception($e->getMessage());
+		}       
+	}
+
+	public function insertar($query, $params){
+		try{ 
+			$stmt = $this->datab->prepare($query); 
+			$stmt->execute($params);
+
+		}catch(PDOException $e){
+			throw new Exception($e->getMessage());
+		}           
+	}
+
+	public function actualizar($query, $params){
+		return $this->insertar($query, $params);
+	}
+
+	public function eliminar($query, $params){
+		return $this->insertar($query, $params);
+	}
+
+	public function getSP($sp, $params=array()) {
+		try{
+			$stmt = $this->datab->beginTransaction();
+			$stmt = $this->datab->prepare($sp);
+			$stmt->execute($params);
+			$result = $stmt->fetchAll();
+			$stmt = $this->datab->commit();
+			return $result;
+		}catch(PDOException $e){
+			$stmt = $this->datab->rollBack(); 
+			throw new Exception($e->getMessage());
+		}
+	}
+}
+
 ?>

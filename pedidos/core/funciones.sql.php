@@ -1,4 +1,5 @@
 <?php
+session_start();
 if(isset($_POST['funcion']))
 $funcion=$_POST['funcion'];
 else
@@ -36,9 +37,11 @@ switch ($funcion) {
 	case 'fcnSTCta':
 	fcnSTCta();
 	break;
-	case '':
+	case 'fcnValidarCorreo':
+		fcnValidarCorreo();
 	break;
-	case '':
+	case 'fcnCarrito':
+		fcnCarrito();
 	break;
 }
 
@@ -1196,6 +1199,178 @@ $disponible='';
 				echo $errorMessage;
 	  }
 	}
+//Validar correo con pin
+	/*function fcnValidarCorreo(){
+		$sql="SELECT 
+			COUNT(c_cliente)AS id
+		FROM cli_usuarios_clientes 
+		WHERE c_usuario='".$_POST["c_usuario"]."' AND c_codigo_confirmacion='".$_POST["pin"]."';";
+		//echo $sql;
+		require('conexion.php');
+				$respuesta='';
 
-	
+				try {
+					$db = new BaseDatos();
+
+					if(!$db->conectar()){
+							$respuesta= "No Se conecto";
+					}else{
+						$consulta = $db->conexion->query($sql);
+						//$db->conexion->query($sql);
+						if(mysqli_error($db->conexion)!=""){
+							echo mysqli_error($db->conexion)." Error";
+							$db->conexion->rollback();
+							echo $respuesta;
+							exit;
+						}else {
+							mysqli_commit($db->conexion);
+						}
+						
+						while($resultados = mysqli_fetch_array($consulta)) {
+							//echo $resultados['id'];
+							if($resultados['id'] > 0){
+		$queryInst="UPDATE cli_usuarios_clientes SET c_codigo_confirmacion='' WHERE c_usuario='".$_POST["c_usuario"]."';";
+								//echo $queryInst; 
+		
+								//$consulta = $db->conexion->query($queryInst);
+
+		if ($db->conexion->query($queryInst) === TRUE) {
+			//echo "Record updated successfully";
+			$respuesta='1';
+		  } 
+
+		
+							}
+							
+						}
+					
+					
+					}
+				} catch (Exception $e) {
+					$respuesta=$e;
+
+					echo $respuesta;
+				}finally
+				{
+					$db->desconectar();
+				}
+				echo $respuesta;
+				return $respuesta;
+			}*/
+
+			function fcnValidarCorreo(){
+				require('conexion.php');
+				$respuesta='';
+				try{
+					$c_usuario = $_POST['c_usuario']; 
+					$pin = $_POST['pin']; 
+					
+				
+					$conex = new db();
+
+					$sql="SELECT 
+			COUNT(c_cliente)AS id, c_cliente
+		FROM cli_usuarios_clientes 
+		WHERE c_usuario='$c_usuario' AND c_codigo_confirmacion='$pin'";
+		//echo $sql;
+		$query = $conex->getFilas($sql, array());
+
+		if($query >0){
+			foreach ($query as $row) {
+				if ($row['id'] > 0) {
+					//$hash = $conex->hash($clave);
+					$queryInst="UPDATE cli_usuarios_clientes SET c_codigo_confirmacion='' WHERE c_usuario='$c_usuario';";
+					$conex->insertar($queryInst, array());
+
+					$queryInto="INSERT INTO cli_usuarios_clientes_info
+								(c_cliente,
+								nombre,
+								apellido,
+								telefono,
+								b_registro_activo,
+								f_ingreso,
+								d_imagen_usuario)
+								VALUES
+								('".$row['c_cliente']."',
+								'',
+								'',
+								'',
+								1,
+								NOW(),
+								'usuario.png');";
+					$conex->insertar($queryInto, array());
+						
+					$respuesta='1';
+					
+				}
+			}
+		}else{
+			$respuesta='0';
+		}
+		//return $respuesta;
+					echo json_encode($respuesta);
+					
+					$conex->desconectar();
+				}catch(PDOException $e){
+					echo json_encode($e->getMessage());
+				}
+				//return $respuesta;
+			}
+
+			function fcnCarrito(){
+				require('conexion.php');
+				$respuesta='';
+				//echo "HOLAAA";
+				try{
+					//$c_cliente = $_POST['c_usuario']; 
+					$c_cliente = $_SESSION["c_cliente"];
+					$c_producto = $_POST['c_producto']; 
+					$cant = $_POST['cant']; 
+					$c_empresa = $_POST['c_empresa']; 
+					$accion = $_POST['accion']; 
+					
+				
+					$conex = new db();
+
+					$sql="SELECT COUNT(id_carro)AS id 
+							FROM cli_carro 
+						WHERE c_cliente='$c_cliente' AND c_producto='$c_producto'";
+		//echo $sql;
+		$query = $conex->getFilas($sql, array());
+
+		if($query > 0){
+			foreach ($query as $row) {
+				if ($row['id'] > 0) {
+					//$queryInst="UPDATE cli_carro SET cant=cant+$cant WHERE c_producto='$c_producto';";
+					$queryInst="UPDATE cli_carro SET cant=cant+1 WHERE c_producto='$c_producto';";
+					$conex->insertar($queryInst, array());
+						
+					$respuesta='2';
+				}else{
+					$queryInto="INSERT INTO cli_carro
+								(c_empresa,
+								c_cliente,
+								c_producto,
+								cant)
+								VALUES
+								('$c_empresa',
+								'$c_cliente',
+								'$c_producto',
+								'$cant');";
+					$conex->insertar($queryInto, array());
+					$respuesta='1';
+				}
+			}
+		}else{
+			$respuesta='0';
+		}
+		//return $respuesta;
+					echo json_encode($respuesta);
+					
+					$conex->desconectar();
+				}catch(PDOException $e){
+					echo json_encode($e->getMessage());
+				}
+				//return $respuesta;
+			}
  ?>

@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('America/Tegucigalpa');
 $time = time();
-
+session_start();
 //echo date("Ymd_H_i_s", $time);
 
  ?>

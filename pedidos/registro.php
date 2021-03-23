@@ -168,6 +168,10 @@ html {
 					</form>
 				</div>
 
+        <!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalValidar">
+  Launch static backdrop modal
+</button>-->
+
 				<div class="mt-4">
 					<div class="d-flex justify-content-center links">
            <a href="login.php" class="ml-2">Iniciar Sesion</a>
@@ -200,6 +204,30 @@ html {
          </div>
        </div>
       </div>
+
+      <!-- Modal Validar correo -->
+<div class="modal fade" id="modalValidar" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+        
+      </div>
+      <div class="modal-body">
+        <p class="h5">Se envio un codio de validacion a su correo favor ingresarlo aqui:</p>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">*</span>
+          </div>
+          <input type="text" class="form-control" placeholder="Pin" aria-label="Pin" aria-describedby="basic-addon1" id="txtPin">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnValidar">Validar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
       <script src="https://bfdtechnologies.info/js/bootstrap-notify.js">  </script>
@@ -238,8 +266,8 @@ html {
                 success: function(mensaje)
                 {
                   if(mensaje=='OK'){
-                     location.reload();
-
+                     //location.reload();
+                     $('#modalValidar').modal('show');
                   }else {
                     console.log("Respuesta > ( "+mensaje+" )");
 
@@ -293,6 +321,59 @@ html {
         setTimeout(geo(), 1000);
       };
     }
+
+    $("#btnValidar").click(function() {
+      //$(".loader").fadeIn("fast");
+      var c_usuario = $('#usuario').val();
+      var pin = $('#txtPin').val();
+
+      try {
+        $.ajax({
+          url: "core/funciones.sql.php",
+          type: 'POST',
+          dataType: 'JSON',
+          data: {
+            funcion: 'fcnValidarCorreo',
+            c_usuario: c_usuario,
+            pin: pin
+          }, //agregado
+          //timeout: 5000,
+        }).done(function (json) {
+          //alert(json);
+          if(json == 1){
+              location.reload();
+            }else{
+              alert("Error");
+            }
+        }).fail(function (jqXHR, estado, error) {
+          console.log(jqXHR);
+        }).always(function () {
+          /*$("#dvLoading").css({
+            visibility: "hidden",
+            opacity: "0"
+          });*/
+        })
+      } catch (err) {
+        //alert('Ha ocurrido un problema!');
+        console.log(err.message);
+      }
+    
+      /*$.post("core/funciones.sql.php", {
+            funcion: 'fcnValidarCorreo',
+            c_usuario: $('#usuario').val(),
+            pin: $('#txtPin').val()
+        },
+        function(mensaje) {
+            //$('#empresas').html(mensaje);
+            if(mensaje == 1){
+              location.reload();
+            }
+            
+            //$(".loader").fadeOut("fast");
+            console.log(mensaje);
+            //alert(mensaje);
+        });*/
+    });
   </script>
 </body>
 </html>

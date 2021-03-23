@@ -231,11 +231,18 @@ img {
 
           if($('#detalleProdModal').is(':visible'))
           $("#modal_pro_"+$c_producto).val(lstPro[i]["cantidad"]);
+
+          var c_producto=lstPro[i]["c_producto"];
+          var cantidad=lstPro[i]["cantidad"];
+          var c_empresa=$("#c_empresa").val();
+          //alert(lstPro[i]["cantidad"]+"="+lstPro[i]["c_producto"]+"-"+$("#c_empresa").val());
+          carrito(c_producto, cantidad, c_empresa, 1);
         }
 
         total=parseFloat(total)+parseFloat(lstPro[i]["subtotal"]);
+        
       }
-      //alert(total);
+      
       $("#subtotal").val(total);
 
       var tot=parseFloat($("#subtotal").val())+parseFloat($("#envio").val());
@@ -369,8 +376,10 @@ img {
 <br/>
 <input type="text" name="filtro" onkeyup="listarProductos();" placeholder="Buscar" id="filtro" >
          <hr/>
-
+         <a class="btn btn-primary" href="usuario.php" role="button">Usuario</a>
+         <a class="btn btn-primary" href="carro.php" role="button">Carro</a>
 </header>
+
     <form class="col-md-11 col-sm-12" action="#" method="post" id="frmPedido">
 
        
@@ -540,7 +549,7 @@ if(isset($_SESSION['loggedin']) && $_SESSION['loggedin'])
              </div>
            </div>
            <div class="modal-footer text-center">
-            <center> <button type="button" class="btn btn-success" data-dismiss="modal">OK</button>
+            <center> <button type="button" class="btn btn-success" data-dismiss="modal" id="btnAceptar">OK</button>
             </center>
            </div>
          </div>
@@ -696,6 +705,71 @@ if(isset($_SESSION['loggedin']) && $_SESSION['loggedin'])
           console.log(parseInt($("#"+$c_complemento).val()));
 
         }
+
+        
+          /*function carrito(c_producto, cant, c_empresa, accion) {
+          alert(c_producto+"-"+cant+"-"+c_empresa+"-"+accion);
+          try {
+            $.ajax({
+              url: "../core/funciones.sql.php",
+              type: 'POST',
+              dataType: 'JSON',
+              data: {
+                funcion: 'fcnCarrito',
+                c_producto: c_producto,
+                cant: cant,
+                c_empresa: c_empresa,
+                accion: accion
+              }, //agregado
+              //timeout: 5000,
+            }).done(function (json) {
+              if(json == 1){
+                  alert(json);
+                }else{
+                  alert("Error");
+                }
+            }).fail(function (jqXHR, estado, error) {
+              console.log(jqXHR);
+            }).always(function () {
+              $("#dvLoading").css({
+                visibility: "hidden",
+                opacity: "0"
+              });
+            })
+          } catch (err) {
+            //alert('Ha ocurrido un problema!');
+            console.log(err.message);
+          }
+        }*/
+
+        function carrito(c_producto, cant, c_empresa, accion) {
+          //$('#complementos').html("");
+
+          $(".loader").fadeIn("fast");
+          
+          var datosForm=new FormData();
+          datosForm.append("funcion","fcnCarrito");
+          datosForm.append("c_producto",c_producto);
+          datosForm.append("cant",cant);
+          datosForm.append("c_empresa",c_empresa);
+          datosForm.append("accion",accion);
+
+            $.ajax({
+              url: "../core/funciones.sql.php",
+              type: "POST",
+              data: datosForm,
+              contentType: false,
+              processData: false,
+              success: function(mensaje){
+                //console.log(mensaje);
+                //$('#complementos').html(mensaje);
+                alert(mensaje);
+                $(".loader").fadeOut("fast");
+                
+              }
+          });
+        }
+        
       </script>
   </body>
 </html>
